@@ -195,7 +195,7 @@ def _api_manifest():
     """Machine-readable list of JSON/binary APIs (for SPA/mobile/any client)."""
     base = request.url_root.rstrip("/")
     return {
-        "service": "FarmAssist Chatura API",
+        "service": "FarmAssist Backend API",
         "docs": f"{base}/api",
         "endpoints": [
             {"path": "/api", "method": "GET", "json": True, "description": "This discovery document."},
