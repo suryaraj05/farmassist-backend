@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriBot Assistant - FarmAssist</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --secondary-green: #4caf50;
+            --accent-green: #81c784;
+            --light-bg: #f1f8e9;
+            --white: #ffffff;
+            --dark-text: #1b5e20;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-green) !important;
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px auto;
+            background-color: var(--white);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: var(--primary-green);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background-color: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user-message .message-content {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message .message-content {
+            background-color: #e8f5e9;
+            color: var(--dark-text);
+            border-bottom-left-radius: 5px;
+            border: 1px solid #c8e6c9;
+            white-space: pre-line;
+        }
+
+        .bot-message .message-content .msg-text {
+            white-space: pre-line;
+        }
+
+        .chat-input-area {
+            padding: 20px 30px;
+            background-color: var(--white);
+            border-top: 1px solid #eee;
+        }
+
+        .input-group {
+            background-color: #f5f5f5;
+            border-radius: 30px;
+            padding: 5px 5px 5px 20px;
+            border: 1px solid #eee;
+        }
+
+        #user-input {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            padding: 10px 0;
+        }
+
+        .btn-send {
+            background-color: var(--primary-green);
+            color: white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-send:hover {
+            background-color: var(--secondary-green);
+            transform: scale(1.1);
+        }
+
+        .back-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Custom Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i><span class="t-brand">FarmAssist</span></a>
+            <div class="ms-auto d-flex align-items-center">
+                <a href="/" class="back-link me-3"><i class="fas fa-arrow-left me-1"></i><span class="t-back">Back to Home</span></a>
+                <select class="form-select form-select-sm" id="languageSelector" onchange="changeLanguage(this.value)" style="width: auto;">
+                    <option value="en">English</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="chat-container mb-4">
+        <div class="chat-header">
+            <h1 class="h4 mb-0 fw-bold t-agrigpt-header"><i class="fas fa-robot me-2"></i>AgriBot Assistant</h1>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                <div class="message-content shadow-sm t-welcome-msg">
+                    <i class="fas fa-leaf me-2 text-success"></i>Hello! I'm AgriBot, your farming assistant. How can I help you today with your agricultural queries?
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="input-group">
+                <input type="text" id="user-input" class="form-control t-input-placeholder" placeholder="Ask about crops, soil, pests..." aria-label="Farming question">
+                <button class="btn btn-send" id="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                "brand": "FarmAssist",
+                "back": "Back to Home",
+                "agrigpt-header": "AgriBot Assistant",
+                "welcome-msg": "Hello! I'm AgriBot, your farming assistant. How can I help you today with your agricultural queries?",
+                "input-placeholder": "Ask about crops, soil, pests...",
+                "error-msg": "Sorry, I encountered an error. Please try again."
+            },
+            te: {
+                "brand": "FarmAssist",
+                "back": "హోమ్ కి తిరిగి వెళ్ళండి",
+                "agrigpt-header": "AgriBot అసిస్టెంట్",
+                "welcome-msg": "నమస్కారం! నేను AgriBot, మీ వ్యవసాయ సహాయకుడిని. ఈరోజు మీ వ్యవసాయ ప్రశ్నలతో నేను మీకు ఎలా సహాయపడగలను?",
+                "input-placeholder": "పంటలు, నేల, తెగుళ్ల గురించి అడగండి...",
+                "error-msg": "క్షమించండి, నాకు ఒక లోపం ఎదురైంది. దయచేసి మళ్ళీ ప్రయత్నించండి."
+            },
+            hi: {
+                "brand": "FarmAssist",
+                "back": "होम पर वापस जाएं",
+                "agrigpt-header": "AgriBot सहायक",
+                "welcome-msg": "नमस्ते! मैं AgriBot हूं, आपका कृषि सहायक। आज मैं आपकी कृषि संबंधी पूछताछ में कैसे मदद कर सकता हूं?",
+                "input-placeholder": "फसलों, मिट्टी, कीटों के बारे में पूछें...",
+                "error-msg": "क्षमा करें, एक त्रुटि हुई। कृपया पुनः प्रयास करें।"
+            }
+        };
+
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(message, isUser, imageUrl = "") {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const icon = isUser ? '' : '<i class="fas fa-leaf me-2 text-success"></i>';
+            
+            let imageHtml = '';
+            
+            messageDiv.innerHTML = `
+                <div class="message-content shadow-sm">
+                    <div>${icon}${message}</div>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            userInput.value = '';
+
+            // Show a loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.id = 'temp-loading';
+                    loadingDiv.innerHTML = `
+                <div class="message-content shadow-sm">
+                    <i class="fas fa-spinner fa-spin me-2"></i> AgriBot is thinking...
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // Remove loading message
+                const loader = document.getElementById('temp-loading');
+                if (loader) loader.remove();
+                
+                addMessage(data.response, false);
+            } catch (error) {
+                const loader = document.getElementById('temp-loading');
+                if (loader) loader.remove();
+                
+                const lang = localStorage.getItem('selectedLanguage') || 'en';
+                addMessage(translations[lang]["error-msg"], false);
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selectedLanguage', lang);
+            updateContent(lang);
+        }
+
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.querySelectorAll('.t-brand').forEach(el => el.textContent = t['brand']);
+            document.querySelectorAll('.t-back').forEach(el => el.textContent = t['back']);
+            document.querySelectorAll('.t-agrigpt-header').forEach(el => {
+                const icon = el.querySelector('i');
+                el.textContent = ' ' + t['agrigpt-header'];
+                if (icon) el.prepend(icon);
+            });
+            document.querySelectorAll('.t-welcome-msg').forEach(el => {
+                if (el.childNodes.length > 0) {
+                    const icon = el.querySelector('i');
+                    el.textContent = ' ' + t['welcome-msg'];
+                    if (icon) el.prepend(icon);
+                }
+            });
+            document.querySelectorAll('.t-input-placeholder').forEach(el => {
+                el.placeholder = t['input-placeholder'];
+            });
+            
+            document.getElementById('languageSelector').value = lang;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            updateContent(savedLang);
+        });
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

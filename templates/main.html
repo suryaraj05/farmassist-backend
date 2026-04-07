@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmAssist - Your Agricultural Assistant</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --secondary-green: #4caf50;
+            --accent-green: #81c784;
+            --light-bg: #f1f8e9;
+            --white: #ffffff;
+            --dark-text: #1b5e20;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-green) !important;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(46, 125, 50, 0.8), rgba(46, 125, 50, 0.8)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 100px 0;
+            color: var(--white);
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-green);
+            border-color: var(--secondary-green);
+        }
+
+        .feature-card {
+            background-color: var(--white);
+            border: none;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-green);
+            margin-bottom: 20px;
+        }
+
+        .info-section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            color: var(--primary-green);
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .footer {
+            background-color: var(--primary-green);
+            color: var(--white);
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i><span class="t-brand">FarmAssist</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link t-home" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link t-features" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link t-agrigpt" href="/bot">AgriBot Chat</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <select class="form-select form-select-sm" id="languageSelector" onchange="changeLanguage(this.value)">
+                            <option value="en">English</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                        </select>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-3 mb-4 fw-bold t-hero-title">Introducing AgriBot</h1>
+            <p class="lead mb-5 px-md-5 t-hero-subtitle">The agriculture chatbot powered by AI. Get real-time advice on crop cultivation, pest control, soil health, and more. Empowering farmers with accurate insights for a better harvest.</p>
+            <a href="/bot" class="btn btn-primary btn-lg t-try-btn"><i class="fas fa-robot me-2"></i>Try AgriBot</a>
+        </div>
+    </header>
+
+    <section class="info-section">
+        <div class="container text-center">
+            <h2 class="section-title t-what-is">What is FarmAssist?</h2>
+            <p class="lead text-muted mx-auto t-info-text" style="max-width: 800px;">Our agritech platform combines AI and data to help farmers make informed decisions. From weather forecasts to fertilizer recommendations, we are here to improve yields and ensure agricultural success.</p>
+        </div>
+    </section>
+
+    <section id="features" class="container pb-5">
+        <h2 class="section-title t-our-features">Our Features</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-cloud-sun feature-icon"></i>
+                    <h3 class="t-weather-title">Weather Forecast</h3>
+                    <p class="text-muted t-weather-desc">Real-time updates on weather conditions to help you manage your crops effectively.</p>
+                    <a href="/weather" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-calculator feature-icon"></i>
+                    <h3 class="t-fcalc-title">Fertilizer Calculator</h3>
+                    <p class="text-muted t-fcalc-desc">Determine the optimal amount of fertilizer needed for your specific fields.</p>
+                    <a href="/fcalculator" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-flask feature-icon"></i>
+                    <h3 class="t-fpred-title">Fertilizer Predictor</h3>
+                    <p class="text-muted t-fpred-desc">Suggest the best type of fertilizer based on your soil requirements.</p>
+                    <a href="/fpredictor" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-microphone feature-icon"></i>
+                    <h3 class="t-voice-title">Voice Chatbot</h3>
+                    <p class="text-muted t-voice-desc">Speak to our AI assistant in English and get instant voice responses.</p>
+                    <a href="/voicechat" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-image feature-icon"></i>
+                    <h3 class="t-disease-title">Disease Detection</h3>
+                    <p class="text-muted t-disease-desc">Upload a crop image to detect possible diseases or nutrient problems with AI.</p>
+                    <a href="/disease-detection" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-seedling feature-icon"></i>
+                    <h3 class="t-croprec-title">Crop Recommendation</h3>
+                    <p class="text-muted t-croprec-desc">Get the most suitable crop suggestion based on soil and weather values.</p>
+                    <a href="/crop-recommendation" class="btn btn-outline-success mt-auto t-get-started">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0 t-footer">&copy; 2026 FarmAssist - Helping Farmers Grow Better <i class="fas fa-heart ms-1"></i></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const translations = {
+            en: {
+                "brand": "FarmAssist",
+                "home": "Home",
+                "features": "Features",
+                "agrigpt": "AgriBot Chat",
+                "hero-title": "Introducing AgriBot",
+                "hero-subtitle": "The agriculture chatbot powered by AI. Get real-time advice on crop cultivation, pest control, soil health, and more. Empowering farmers with accurate insights for a better harvest.",
+                "try-btn": "Try AgriBot",
+                "what-is": "What is FarmAssist?",
+                "info-text": "Our agritech platform combines AI and data to help farmers make informed decisions. From weather forecasts to fertilizer recommendations, we are here to improve yields and ensure agricultural success.",
+                "our-features": "Our Features",
+                "weather-title": "Weather Forecast",
+                "weather-desc": "Real-time updates on weather conditions to help you manage your crops effectively.",
+                "fcalc-title": "Fertilizer Calculator",
+                "fcalc-desc": "Determine the optimal amount of fertilizer needed for your specific fields.",
+                "fpred-title": "Fertilizer Predictor",
+                "fpred-desc": "Suggest the best type of fertilizer based on your soil requirements.",
+                "voice-title": "Voice Chatbot",
+                "voice-desc": "Speak to our AI assistant in English and get instant voice responses.",
+                "disease-title": "Disease Detection",
+                "disease-desc": "Upload a crop image to detect possible diseases or nutrient problems with AI.",
+                "croprec-title": "Crop Recommendation",
+                "croprec-desc": "Get the most suitable crop suggestion based on soil and weather values.",
+                "get-started": "Get Started",
+                "footer": "© 2026 FarmAssist - Helping Farmers Grow Better"
+            },
+            te: {
+                "brand": "చతుర",
+                "home": "హోమ్",
+                "features": "ఫీచర్లు",
+                "agrigpt": "AgriBot చాట్",
+                "hero-title": "AgriBotని పరిచయం చేస్తున్నాము",
+                "hero-subtitle": "AI ద్వారా నడిచే వ్యవసాయ చాట్‌బాట్. పంటల సాగు, తెగుళ్ల నివారణ, నేల ఆరోగ్యం మరియు మరిన్నింటిపై నిజ-సమయ సలహాలను పొందండి. మెరుగైన పంట కోసం ఖచ్చితమైన సమాచారంతో రైతులకు సాధికారత కల్పించడం.",
+                "try-btn": "AgriBotని ప్రయత్నించండి",
+                "what-is": "చతుర అంటే ఏమిటి?",
+                "info-text": "మా అగ్రిటెక్ ప్లాట్‌ఫారమ్ రైతులు సమాచారంతో కూడిన నిర్ణయాలు తీసుకోవడంలో సహాయపడటానికి AI మరియు డేటాను మిళితం చేస్తుంది. వాతావరణ అంచనాల నుండి ఎరువుల సిఫార్సుల వరకు, దిగుబడిని మెరుగుపరచడానికి మరియు వ్యవసాయ విజయాన్ని నిర్ధారించడానికి మేము ఇక్కడ ఉన్నాము.",
+                "our-features": "మా ఫీచర్లు",
+                "weather-title": "వాతావరణ సూచన",
+                "weather-desc": "మీ పంటలను సమర్థవంతంగా నిర్వహించడంలో మీకు సహాయపడటానికి వాతావరణ పరిస్థితులపై నిజ-సమయ నవీకరణలు.",
+                "fcalc-title": "ఎరువుల కాలిక్యులేటర్",
+                "fcalc-desc": "మీ నిర్దిష్ట పొలాలకు అవసరమైన ఎరువుల సరైన మొత్తాన్ని నిర్ణయించండి.",
+                "fpred-title": "ఎరువుల ప్రిడిక్టర్",
+                "fpred-desc": "మీ నేల అవసరాల ఆధారంగా ఉత్తమమైన ఎరువుల రకాన్ని సూచించండి.",
+                "voice-title": "వాయిస్ చాట్‌బాట్",
+                "voice-desc": "మా AI అసిస్టెంట్‌తో ఇంగ్లీష్‌లో మాట్లాడండి మరియు తక్షణ వాయిస్ ప్రతిస్పందనలను పొందండి.",
+                "disease-title": "వ్యాధి గుర్తింపు",
+                "disease-desc": "వ్యాధులు లేదా పోషక లోపాలను గుర్తించడానికి పంట చిత్రాన్ని అప్‌లోడ్ చేసి AI సహాయం పొందండి.",
+                "croprec-title": "పంట సిఫార్సు",
+                "croprec-desc": "నేల మరియు వాతావరణ విలువల ఆధారంగా అత్యంత అనుకూలమైన పంట సిఫార్సును పొందండి.",
+                "get-started": "ప్రారంభించండి",
+                "footer": "© 2026 చతుర - రైతులు మెరుగ్గా ఎదగడానికి సహాయం చేయడం"
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selectedLanguage', lang);
+            updateContent(lang);
+        }
+
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.querySelectorAll('.t-brand').forEach(el => el.textContent = t['brand']);
+            document.querySelectorAll('.t-home').forEach(el => el.textContent = t['home']);
+            document.querySelectorAll('.t-features').forEach(el => el.textContent = t['features']);
+            document.querySelectorAll('.t-agrigpt').forEach(el => el.textContent = t['agrigpt']);
+            document.querySelectorAll('.t-hero-title').forEach(el => el.textContent = t['hero-title']);
+            document.querySelectorAll('.t-hero-subtitle').forEach(el => el.textContent = t['hero-subtitle']);
+            document.querySelectorAll('.t-try-btn').forEach(el => {
+                const icon = el.querySelector('i');
+                el.textContent = ' ' + t['try-btn'];
+                if (icon) el.prepend(icon);
+            });
+            document.querySelectorAll('.t-what-is').forEach(el => el.textContent = t['what-is']);
+            document.querySelectorAll('.t-info-text').forEach(el => el.textContent = t['info-text']);
+            document.querySelectorAll('.t-our-features').forEach(el => el.textContent = t['our-features']);
+            document.querySelectorAll('.t-weather-title').forEach(el => el.textContent = t['weather-title']);
+            document.querySelectorAll('.t-weather-desc').forEach(el => el.textContent = t['weather-desc']);
+            document.querySelectorAll('.t-fcalc-title').forEach(el => el.textContent = t['fcalc-title']);
+            document.querySelectorAll('.t-fcalc-desc').forEach(el => el.textContent = t['fcalc-desc']);
+            document.querySelectorAll('.t-fpred-title').forEach(el => el.textContent = t['fpred-title']);
+            document.querySelectorAll('.t-fpred-desc').forEach(el => el.textContent = t['fpred-desc']);
+            document.querySelectorAll('.t-voice-title').forEach(el => el.textContent = t['voice-title']);
+            document.querySelectorAll('.t-voice-desc').forEach(el => el.textContent = t['voice-desc']);
+            document.querySelectorAll('.t-disease-title').forEach(el => el.textContent = t['disease-title']);
+            document.querySelectorAll('.t-disease-desc').forEach(el => el.textContent = t['disease-desc']);
+            document.querySelectorAll('.t-croprec-title').forEach(el => el.textContent = t['croprec-title']);
+            document.querySelectorAll('.t-croprec-desc').forEach(el => el.textContent = t['croprec-desc']);
+            document.querySelectorAll('.t-get-started').forEach(el => el.textContent = t['get-started']);
+            document.querySelectorAll('.t-footer').forEach(el => {
+                const icon = el.querySelector('i');
+                el.textContent = t['footer'] + ' ';
+                if (icon) el.appendChild(icon);
+            });
+            
+            document.getElementById('languageSelector').value = lang;
+        }
+
+        // Initialize language
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            updateContent(savedLang);
+        });
+    </script>
+</body>
+</html>

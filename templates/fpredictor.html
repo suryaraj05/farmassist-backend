@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertilizer Predictor - FarmAssist</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --secondary-green: #4caf50;
+            --accent-green: #81c784;
+            --light-bg: #f1f8e9;
+            --white: #ffffff;
+            --dark-text: #1b5e20;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-green) !important;
+        }
+
+        .predict-container {
+            max-width: 600px;
+            margin: 80px auto;
+        }
+
+        .predict-card {
+            background-color: var(--white);
+            border: none;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-green);
+            box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+        }
+
+        .btn-predict {
+            background-color: var(--primary-green);
+            color: white;
+            border-radius: 30px;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
+            border: none;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-predict:hover {
+            background-color: var(--secondary-green);
+            transform: scale(1.02);
+        }
+
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #e8f5e9;
+            text-align: center;
+            border: 2px dashed var(--accent-green);
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0;
+        }
+
+        .back-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i><span class="t-brand">FarmAssist</span></a>
+            <div class="ms-auto d-flex align-items-center">
+                <a href="/" class="back-link me-3"><i class="fas fa-arrow-left me-1"></i><span class="t-back">Back to Home</span></a>
+                <select class="form-select form-select-sm" id="languageSelector" onchange="changeLanguage(this.value)" style="width: auto;">
+                    <option value="en">English</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container predict-container">
+        <div class="predict-card">
+            <div class="text-center mb-4">
+                <i class="fas fa-flask fa-3x text-success mb-3"></i>
+                <h1 class="h3 fw-bold t-pred-header">Fertilizer Predictor</h1>
+                <p class="text-muted t-pred-subtitle">Enter soil values to get recommendations</p>
+            </div>
+
+            <form method="post" action="/predict" onsubmit="return validateForm()">
+                <div class="mb-3">
+                    <label class="form-label t-label-n">Nitrogen (N)</label>
+                    <input type="number" name="Nitrogen" class="form-control t-placeholder-n" placeholder="Enter Nitrogen value" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label t-label-p">Phosphorous (P)</label>
+                    <input type="number" name="Phosphorous" class="form-control t-placeholder-p" placeholder="Enter Phosphorous value" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label t-label-k">Potassium (K)</label>
+                    <input type="number" name="Potassium" class="form-control t-placeholder-k" placeholder="Enter Potassium value" required>
+                </div>
+
+                <button type="submit" class="btn btn-predict">
+                    <i class="fas fa-search me-2"></i><span class="t-get-recomm">Get Recommendation</span>
+                </button>
+            </form>
+
+            {% if result %}
+            <div class="result-area">
+                <p class="small text-muted mb-1 t-recomm-label">Recommended Fertilizer:</p>
+                <p class="result-text">{{ result }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="text-center py-4">
+        <p class="text-muted small t-footer-pred">&copy; 2026 FarmAssist AI Systems</p>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                "brand": "FarmAssist",
+                "back": "Back to Home",
+                "pred-header": "Fertilizer Predictor",
+                "pred-subtitle": "Enter soil values to get recommendations",
+                "label-n": "Nitrogen (N)",
+                "label-p": "Phosphorous (P)",
+                "label-k": "Potassium (K)",
+                "placeholder-n": "Enter Nitrogen value",
+                "placeholder-p": "Enter Phosphorous value",
+                "placeholder-k": "Enter Potassium value",
+                "get-recomm": "Get Recommendation",
+                "recomm-label": "Recommended Fertilizer:",
+                "footer-pred": "© 2026 FarmAssist AI Systems"
+            },
+            te: {
+                "brand": "చతుర",
+                "back": "హోమ్ కి తిరిగి వెళ్ళండి",
+                "pred-header": "ఎరువుల ప్రిడిక్టర్",
+                "pred-subtitle": "సిఫార్సులను పొందడానికి నేల విలువలను నమోదు చేయండి",
+                "label-n": "నత్రజని (N)",
+                "label-p": "భాస్వరం (P)",
+                "label-k": "పొటాషియం (K)",
+                "placeholder-n": "నత్రజని విలువను నమోదు చేయండి",
+                "placeholder-p": "భాస్వరం విలువను నమోదు చేయండి",
+                "placeholder-k": "పొటాషియం విలువను నమోదు చేయండి",
+                "get-recomm": "సిఫార్సు పొందండి",
+                "recomm-label": "సిఫార్సు చేయబడిన ఎరువులు:",
+                "footer-pred": "© 2026 చతుర AI సిస్టమ్స్"
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selectedLanguage', lang);
+            updateContent(lang);
+        }
+
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.querySelectorAll('.t-brand').forEach(el => el.textContent = t['brand']);
+            document.querySelectorAll('.t-back').forEach(el => el.textContent = t['back']);
+            document.querySelectorAll('.t-pred-header').forEach(el => el.textContent = t['pred-header']);
+            document.querySelectorAll('.t-pred-subtitle').forEach(el => el.textContent = t['pred-subtitle']);
+            document.querySelectorAll('.t-label-n').forEach(el => el.textContent = t['label-n']);
+            document.querySelectorAll('.t-label-p').forEach(el => el.textContent = t['label-p']);
+            document.querySelectorAll('.t-label-k').forEach(el => el.textContent = t['label-k']);
+            document.querySelectorAll('.t-placeholder-n').forEach(el => el.placeholder = t['placeholder-n']);
+            document.querySelectorAll('.t-placeholder-p').forEach(el => el.placeholder = t['placeholder-p']);
+            document.querySelectorAll('.t-placeholder-k').forEach(el => el.placeholder = t['placeholder-k']);
+            document.querySelectorAll('.t-get-recomm').forEach(el => el.textContent = t['get-recomm']);
+            document.querySelectorAll('.t-recomm-label').forEach(el => el.textContent = t['recomm-label']);
+            document.querySelectorAll('.t-footer-pred').forEach(el => el.textContent = t['footer-pred']);
+            
+            document.getElementById('languageSelector').value = lang;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            updateContent(savedLang);
+        });
+
+        function validateForm() {
+            var nitrogen = document.getElementsByName("Nitrogen")[0].value;
+            var potassium = document.getElementsByName("Potassium")[0].value;
+            var phosphorous = document.getElementsByName("Phosphorous")[0].value;
+
+            if (nitrogen === '' || potassium === '' || phosphorous === '') {
+                alert("Please fill in all fields");
+                return false;
+            }
+            return true;
+        }
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

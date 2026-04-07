@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chatbot - FarmAssist</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --secondary-green: #4caf50;
+            --accent-green: #81c784;
+            --light-bg: #f1f8e9;
+            --white: #ffffff;
+            --dark-text: #1b5e20;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-green) !important;
+        }
+
+        .voice-container {
+            max-width: 800px;
+            margin: 50px auto;
+        }
+
+        .voice-card {
+            background-color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background-color: #eee;
+        }
+
+        .status-indicator.ready { background-color: #e8f5e9; color: #2e7d32; }
+        .status-indicator.recording { background-color: #ffebee; color: #c62828; animation: pulse 1.5s infinite; }
+        .status-indicator.processing { background-color: #e3f2fd; color: #1565c0; }
+        .status-indicator.playing { background-color: #f3e5f5; color: #7b1fa2; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+            color: white;
+            font-size: 3rem;
+            margin: 30px 0;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .record-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(46, 125, 50, 0.4);
+        }
+
+        .record-button.recording {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            box-shadow: 0 10px 20px rgba(211, 47, 47, 0.3);
+        }
+
+        .record-button .button-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .display-box {
+            background-color: #f9f9f9;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            border-left: 5px solid var(--primary-green);
+        }
+
+        .display-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .text-display {
+            font-size: 1rem;
+            color: #555;
+            min-height: 24px;
+        }
+
+        .audio-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        .info-box {
+            background-color: var(--white);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+
+        .back-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i><span class="t-brand">FarmAssist</span></a>
+            <div class="ms-auto d-flex align-items-center">
+                <a href="/" class="back-link me-3"><i class="fas fa-arrow-left me-1"></i><span class="t-back">Back to Home</span></a>
+                <select class="form-select form-select-sm" id="languageSelector" onchange="changeLanguage(this.value)" style="width: auto;">
+                    <option value="en">English</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container voice-container">
+        <div class="voice-card">
+            <h1 class="h3 fw-bold mb-3 t-voice-header">🎤 Voice Assistant</h1>
+
+            <div class="status-indicator ready mb-3" id="statusIndicator">
+                <span id="statusText" class="t-ready-listen">Ready to listen</span>
+            </div>
+
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label small t-lang-label mb-1">Chat language</label>
+                    <select class="form-select form-select-sm" id="chatLanguage">
+                        <option value="en">English (India)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        <option value="as">অসমীয়া (Assamese)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="ne">नेपाली (Nepali)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch d-flex align-items-center mt-3 mt-md-4">
+                        <input class="form-check-input" type="checkbox" id="autoSpeakToggle" checked>
+                        <label class="form-check-label ms-2 small t-auto-speak-label" for="autoSpeakToggle">Auto-speak</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="speechSpeed" class="form-label small t-speed-label mb-1">Speed</label>
+                    <input type="range" class="form-range" id="speechSpeed" min="0.6" max="1.4" step="0.1" value="1">
+                    <div class="small text-muted"><span id="speedValue">100</span>%</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <button class="record-button" id="recordButton">
+                    <i class="fas fa-microphone"></i>
+                    <span class="button-text t-click-record">Click to Record</span>
+                </button>
+            </div>
+
+            <div class="display-box">
+                <h3><i class="fas fa-user me-2"></i><span class="t-your-question">Your Question:</span></h3>
+                <p id="transcriptText" class="text-display italic t-transcribed-placeholder">Your transcribed text will appear here...</p>
+            </div>
+
+            <div class="display-box">
+                <h3><i class="fas fa-robot me-2"></i><span class="t-ai-response">Assistant's Response:</span></h3>
+                <p id="responseText" class="text-display t-response-placeholder">The response will appear here...</p>
+                <div class="audio-status" id="audioStatus" style="display: none;">
+                    <i class="fas fa-volume-up fa-beat"></i>
+                    <span id="audioStatusText" class="t-playing-resp">Playing response...</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-3" id="stopSpeakButton">
+                        <i class="fas fa-stop me-1"></i><span class="t-stop-speaking">Stop voice</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4 class="h6 fw-bold mb-3"><i class="fas fa-info-circle me-2 text-success"></i><span class="t-how-to">How to use:</span></h4>
+            <ul class="small text-muted mb-0 t-use-steps">
+                <li>Click the microphone button to start recording.</li>
+                <li>Speak your farming question clearly in your selected language.</li>
+                <li>Click again to stop or wait for auto-stop.</li>
+                <li>The AI will respond with text and, if enabled, voice output.</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="text-center py-5">
+        <p class="text-muted small t-footer-voice">&copy; 2026 FarmAssist Voice Intelligence</p>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                "brand": "FarmAssist",
+                "back": "Back to Home",
+                "voice-header": "Voice Assistant",
+                "ready-listen": "Ready to listen",
+                "click-record": "Click to Record",
+                "click-stop": "Click to Stop",
+                "listening": "Listening...",
+                "getting-ai": "Getting response...",
+                "speaking": "Speaking...",
+                "your-question": "Your Question:",
+                "ai-response": "Assistant's Response:",
+                "transcribed-placeholder": "Your transcribed text will appear here...",
+                "response-placeholder": "The response will appear here...",
+                "playing-resp": "Playing response...",
+                "how-to": "How to use:",
+                "lang-label": "Chat language",
+                "auto-speak-label": "Auto-speak",
+                "speed-label": "Speed",
+                "stop-speaking": "Stop voice",
+                "use-steps": `
+                    <li>Click the microphone button to start recording.</li>
+                    <li>Speak your farming question clearly in your selected language.</li>
+                    <li>Click again to stop or wait for auto-stop.</li>
+                    <li>The AI will respond with text and, if enabled, voice output.</li>
+                `,
+                "footer-voice": "© 2026 FarmAssist Voice Intelligence"
+            },
+            te: {
+                "brand": "చతుర",
+                "back": "హోమ్ కి తిరిగి వెళ్ళండి",
+                "voice-header": "వాయిస్ అసిస్టెంట్",
+                "ready-listen": "వినడానికి సిద్ధంగా ఉంది",
+                "click-record": "రికార్డ్ చేయడానికి క్లిక్ చేయండి",
+                "click-stop": "ఆపడానికి క్లిక్ చేయండి",
+                "listening": "వింటున్నాను...",
+                "getting-ai": "AI ప్రతిస్పందనను పొందుతోంది...",
+                "speaking": "మాట్లాడుతోంది...",
+                "your-question": "మీ ప్రశ్న:",
+                "ai-response": "అసిస్టెంట్ ప్రతిస్పందన:",
+                "transcribed-placeholder": "మీరు మాట్లాడిన వచనం ఇక్కడ కనిపిస్తుంది...",
+                "response-placeholder": "ప్రతిస్పందన ఇక్కడ కనిపిస్తుంది...",
+                "playing-resp": "ప్రతిస్పందన ప్లే అవుతోంది...",
+                "how-to": "ఎలా ఉపయోగించాలి:",
+                "lang-label": "చాట్ భాష",
+                "auto-speak-label": "ఆటో-స్పీక్",
+                "speed-label": "వేగం",
+                "stop-speaking": "వాయిస్ ఆపు",
+                "use-steps": `
+                    <li>రికార్డింగ్ ప్రారంభించడానికి మైక్రోఫోన్ బటన్‌ను క్లిక్ చేయండి.</li>
+                    <li>మీ వ్యవసాయ ప్రశ్నను మీరు ఎంచుకున్న భాషలో స్పష్టంగా చెప్పండి.</li>
+                    <li>ఆపడానికి మళ్ళీ క్లిక్ చేయండి లేదా ఆటో-స్టాప్ కోసం వేచి ఉండండి.</li>
+                    <li>AI టెక్స్ట్ రూపంలో మరియు (ఎనేబుల్ చేసి ఉంటే) వాయిస్ రూపంలో సమాధానం ఇస్తుంది.</li>
+                `,
+                "footer-voice": "© 2026 చతుర వాయిస్ ఇంటెలిజెన్స్"
+            },
+            hi: {
+                "brand": "चतुर",
+                "back": "होम पर वापस जाएं",
+                "voice-header": "वॉइस असिस्टेंट",
+                "ready-listen": "सुनने के लिए तैयार",
+                "click-record": "रिकॉर्ड करने के लिए क्लिक करें",
+                "click-stop": "रोकने के लिए क्लिक करें",
+                "listening": "सुन रहा हूँ...",
+                "getting-ai": "AI उत्तर तैयार कर रहा है...",
+                "speaking": "बोल रहा है...",
+                "your-question": "आपका प्रश्न:",
+                "ai-response": "असिस्टेंट का उत्तर:",
+                "transcribed-placeholder": "आपकी ऑडियो से निकला टेक्स्ट यहाँ दिखेगा...",
+                "response-placeholder": "उत्तर यहाँ दिखेगा...",
+                "playing-resp": "उत्तर चल रहा है...",
+                "how-to": "कैसे उपयोग करें:",
+                "lang-label": "चैट भाषा",
+                "auto-speak-label": "ऑटो‑स्पीक",
+                "speed-label": "स्पीड",
+                "stop-speaking": "आवाज़ रोकें",
+                "use-steps": `
+                    <li>रिकॉर्डिंग शुरू करने के लिए माइक्रोफोन बटन पर क्लिक करें।</li>
+                    <li>अपना खेती से जुड़ा प्रश्न चुनी हुई भाषा में साफ‑साफ बोलें।</li>
+                    <li>दोबारा क्लिक करके रोकें या ऑटो‑स्टॉप का इंतज़ार करें।</li>
+                    <li>AI टेक्स्ट और (यदि चालू है) वॉइस में उत्तर देगा।</li>
+                `,
+                "footer-voice": "© 2026 चतुर वॉइस इंटेलिजेंस"
+            }
+        };
+
+        let isRecording = false;
+        let currentRequestId = 0;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let autoSpeak = true;
+        let speechSpeed = 1.0;
+        let currentAudio = null;
+        let currentAudioUrl = null;
+
+        const recordButton = document.getElementById('recordButton');
+        const statusText = document.getElementById('statusText');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const transcriptText = document.getElementById('transcriptText');
+        const responseText = document.getElementById('responseText');
+        const audioStatus = document.getElementById('audioStatus');
+        const audioStatusText = document.getElementById('audioStatusText');
+        const chatLanguageSelect = document.getElementById('chatLanguage');
+        const autoSpeakToggle = document.getElementById('autoSpeakToggle');
+        const speechSpeedInput = document.getElementById('speechSpeed');
+        const speedValue = document.getElementById('speedValue');
+        const stopSpeakButton = document.getElementById('stopSpeakButton');
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selectedLanguage', lang);
+            updateContent(lang);
+            // keep chat language in sync by default
+            if (['en','te','hi'].includes(lang)) {
+                chatLanguageSelect.value = lang;
+                localStorage.setItem('chatLanguage', lang);
+            }
+        }
+
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.querySelectorAll('.t-brand').forEach(el => el.textContent = t['brand']);
+            document.querySelectorAll('.t-back').forEach(el => el.textContent = t['back']);
+            document.querySelectorAll('.t-voice-header').forEach(el => el.textContent = t['voice-header']);
+            document.querySelectorAll('.t-ready-listen').forEach(el => el.textContent = t['ready-listen']);
+            document.querySelectorAll('.t-click-record').forEach(el => el.textContent = t['click-record']);
+            document.querySelectorAll('.t-your-question').forEach(el => el.textContent = t['your-question']);
+            document.querySelectorAll('.t-ai-response').forEach(el => el.textContent = t['ai-response']);
+            document.querySelectorAll('.t-transcribed-placeholder').forEach(el => el.textContent = t['transcribed-placeholder']);
+            document.querySelectorAll('.t-response-placeholder').forEach(el => el.textContent = t['response-placeholder']);
+            document.querySelectorAll('.t-playing-resp').forEach(el => el.textContent = t['playing-resp']);
+            document.querySelectorAll('.t-how-to').forEach(el => el.textContent = t['how-to']);
+            document.querySelectorAll('.t-use-steps').forEach(el => el.innerHTML = t['use-steps']);
+            document.querySelectorAll('.t-footer-voice').forEach(el => el.textContent = t['footer-voice']);
+            document.querySelectorAll('.t-lang-label').forEach(el => el.textContent = t['lang-label']);
+            document.querySelectorAll('.t-auto-speak-label').forEach(el => el.textContent = t['auto-speak-label']);
+            document.querySelectorAll('.t-speed-label').forEach(el => el.textContent = t['speed-label']);
+            document.querySelectorAll('.t-stop-speaking').forEach(el => el.textContent = t['stop-speaking']);
+            
+            document.getElementById('languageSelector').value = lang;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            updateContent(savedLang);
+            const savedChatLang = localStorage.getItem('chatLanguage') || savedLang;
+            chatLanguageSelect.value = savedChatLang;
+            autoSpeak = localStorage.getItem('autoSpeak') !== 'false';
+            autoSpeakToggle.checked = autoSpeak;
+            const savedSpeed = parseFloat(localStorage.getItem('speechSpeed') || '1.0');
+            speechSpeed = savedSpeed;
+            speechSpeedInput.value = savedSpeed;
+            speedValue.textContent = Math.round(savedSpeed * 100);
+        });
+
+        function toggleRecording(e) {
+            if (e) e.preventDefault();
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Microphone access is not supported in this browser.');
+                return;
+            }
+
+            audioStatus.style.display = 'none';
+            currentRequestId++;
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            transcriptText.textContent = translations[lang]['listening'];
+            responseText.textContent = translations[lang]['response-placeholder'];
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstart = () => {
+                        isRecording = true;
+                        recordButton.classList.add('recording');
+                        const langKey = localStorage.getItem('selectedLanguage') || 'en';
+                        recordButton.querySelector('.button-text').textContent = translations[langKey]['click-stop'];
+                        updateStatus(translations[langKey]['listening'], 'recording');
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        isRecording = false;
+                        recordButton.classList.remove('recording');
+                        const langKey = localStorage.getItem('selectedLanguage') || 'en';
+                        recordButton.querySelector('.button-text').textContent = translations[langKey]['click-record'];
+
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        audioChunks = [];
+                        stream.getTracks().forEach(t => t.stop());
+                        if (blob.size > 0) {
+                            sendForTranscription(blob);
+                        }
+                    };
+
+                    mediaRecorder.start();
+                })
+                .catch(err => {
+                    console.error('Microphone error:', err);
+                    const langKey = localStorage.getItem('selectedLanguage') || 'en';
+                    updateStatus('❌ ' + (err.message || 'Microphone error'), 'error');
+                });
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+            }
+        }
+
+        async function sendForTranscription(blob) {
+            const thisRequestId = ++currentRequestId;
+            const uiLang = localStorage.getItem('selectedLanguage') || 'en';
+            const chatLang = chatLanguageSelect.value || 'en';
+            try {
+                updateStatus(translations[uiLang]['getting-ai'], 'processing');
+                const formData = new FormData();
+                formData.append('audio', blob, 'query.webm');
+                formData.append('language', chatLang);
+
+                const resp = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+                if (thisRequestId !== currentRequestId) return;
+
+                if (data.error) {
+                    console.error('Transcription error:', data.error);
+                    updateStatus('❌ ' + data.error, 'error');
+                    return;
+                }
+
+                const text = data.text || '';
+                transcriptText.textContent = text;
+                if (text.trim()) {
+                    await processText(text, chatLang, thisRequestId);
+                }
+            } catch (err) {
+                console.error('Transcription error:', err);
+                updateStatus('❌ ' + (err.message || 'Transcription error'), 'error');
+            }
+        }
+
+        async function processText(text, chatLang, requestId) {
+            const thisRequestId = currentRequestId;
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            try {
+                updateStatus(translations[lang]['getting-ai'], 'processing');
+                const selectedOption = chatLanguageSelect.options[chatLanguageSelect.selectedIndex];
+                const langLabel = selectedOption ? selectedOption.textContent : chatLang;
+                const chatResponse = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, lang: chatLang, lang_label: langLabel })
+                });
+                if (thisRequestId !== currentRequestId || (requestId && requestId !== currentRequestId)) return;
+                const chatData = await chatResponse.json();
+                const botResponse = chatData.response;
+                responseText.textContent = botResponse;
+                if (autoSpeak) {
+                    await speak(botResponse, chatLang);
+                } else {
+                    updateStatus(translations[lang]['ready-listen'], 'ready');
+                }
+            } catch (error) {
+                if (thisRequestId !== currentRequestId) return;
+                updateStatus('❌ Error occurred', 'error');
+            }
+        }
+
+        async function speak(text, chatLang) {
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            try {
+                // stop any previous audio
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                if (currentAudioUrl) {
+                    URL.revokeObjectURL(currentAudioUrl);
+                    currentAudioUrl = null;
+                }
+
+                audioStatus.style.display = 'flex';
+                updateStatus(translations[lang]['speaking'], 'playing');
+
+                const resp = await fetch('/text-to-speech', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!resp.ok) {
+                    updateStatus('❌ TTS error', 'error');
+                    audioStatus.style.display = 'none';
+                    return;
+                }
+
+                const arrayBuffer = await resp.arrayBuffer();
+                const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+                const url = URL.createObjectURL(audioBlob);
+                const audio = new Audio(url);
+                currentAudio = audio;
+                currentAudioUrl = url;
+                audio.playbackRate = speechSpeed;
+                audio.onended = () => {
+                    audioStatus.style.display = 'none';
+                    updateStatus(translations[lang]['ready-listen'], 'ready');
+                    if (currentAudioUrl) {
+                        URL.revokeObjectURL(currentAudioUrl);
+                        currentAudioUrl = null;
+                    }
+                    currentAudio = null;
+                };
+                audio.play().catch(err => {
+                    console.error('Audio play error:', err);
+                    audioStatus.style.display = 'none';
+                    updateStatus(translations[lang]['ready-listen'], 'ready');
+                });
+            } catch (err) {
+                console.error('TTS error:', err);
+                audioStatus.style.display = 'none';
+                updateStatus('❌ TTS error', 'error');
+            }
+        }
+
+        function updateStatus(text, state) {
+            statusText.textContent = text;
+            statusIndicator.className = 'status-indicator ' + state;
+        }
+
+        recordButton.addEventListener('click', toggleRecording);
+
+        autoSpeakToggle.addEventListener('change', () => {
+            autoSpeak = autoSpeakToggle.checked;
+            localStorage.setItem('autoSpeak', String(autoSpeak));
+        });
+
+        speechSpeedInput.addEventListener('input', () => {
+            speechSpeed = parseFloat(speechSpeedInput.value || '1');
+            speedValue.textContent = Math.round(speechSpeed * 100);
+            localStorage.setItem('speechSpeed', String(speechSpeed));
+        });
+
+        chatLanguageSelect.addEventListener('change', () => {
+            localStorage.setItem('chatLanguage', chatLanguageSelect.value);
+        });
+
+        function stopSpeaking() {
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+                currentAudioUrl = null;
+            }
+            audioStatus.style.display = 'none';
+            updateStatus(translations[lang]['ready-listen'], 'ready');
+        }
+
+        stopSpeakButton.addEventListener('click', stopSpeaking);
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
